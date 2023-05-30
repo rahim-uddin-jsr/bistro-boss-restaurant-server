@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 app.use(cors());
+app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ztr719a.mongodb.net/?retryWrites=true&w=majority`;
@@ -19,6 +20,7 @@ const client = new MongoClient(uri, {
 
 const menusCollection = client.db("bistroBoss").collection("menusCollection");
 const reviewCollection = client.db("bistroBoss").collection("reviewCollection");
+const cartCollection = client.db("bistroBoss").collection("cartCollection");
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -35,6 +37,23 @@ async function run() {
     });
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/carts", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      if (!email) {
+        res.send([]);
+      }
+      const result = await cartCollection.find(query).toArray();
+      console.log(result);
+      res.send(result);
+    });
+    app.post("/carts", async (req, res) => {
+      const cart = req.body;
+      console.log(cart);
+      const result = await cartCollection.insertOne(cart);
+      console.log(result);
       res.send(result);
     });
   } finally {
