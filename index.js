@@ -18,6 +18,7 @@ const client = new MongoClient(uri, {
   },
 });
 
+const userCollection = client.db("bistroBoss").collection("userCollection");
 const menusCollection = client.db("bistroBoss").collection("menusCollection");
 const reviewCollection = client.db("bistroBoss").collection("reviewCollection");
 const cartCollection = client.db("bistroBoss").collection("cartCollection");
@@ -30,13 +31,31 @@ async function run() {
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
-
-    app.get("/menus", async (req, res) => {
-      const result = await menusCollection.find().toArray();
+    // user related apis
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
       res.send(result);
     });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const isUserExist = await userCollection.findOne(query);
+      console.log(isUserExist);
+      if (isUserExist) {
+        return res.send({ isUserExist });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+    // reviews related apis
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
+    // menu related apis
+    app.get("/menus", async (req, res) => {
+      const result = await menusCollection.find().toArray();
       res.send(result);
     });
     app.get("/carts", async (req, res) => {
